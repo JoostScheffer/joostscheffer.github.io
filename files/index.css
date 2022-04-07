@@ -1,0 +1,135 @@
+html,body{
+    font-family:-apple-system,BlinkMacSystemFont,Roboto,segoe ui,Oxygen,Ubuntu,Cantarell,open sans,helvetica neue,sans-serif;
+    line-height:1.5
+}
+body{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#000;
+    font-size:18px;
+    font-synthesis:none;
+    -moz-font-feature-settings:'kern';
+    font-feature-settings:'kern';
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    direction:ltr;
+    text-align:left
+}
+h1,h2,p{
+    margin:0
+}
+a{
+    text-decoration:none
+}
+a.text-link{
+    position:relative;
+    color:#007aff;
+    padding:4px 6px;
+    margin:-4px -6px;
+    z-index:10;
+    transition:.3s background ease,.3s margin ease;
+    border-radius:4px
+}
+a.text-link:hover{
+    background:#007aff18;
+    margin:-4px -2px
+}
+.quiet{
+    color:#3c3c434d
+}
+.container{
+    max-width:700px;
+    margin:0 auto
+}
+main{
+    padding:24px 28px
+}
+main h1{
+    margin-top:24px;
+    color:#3c3c434d;
+    font-size:64px;
+    font-weight:600;
+    line-height:1.1;
+    letter-spacing:-.003em
+}
+main .primary{
+    margin-top:24px;
+    font-size:24px;
+    font-weight:400;
+    letter-spacing:-.004em
+}
+.intro{
+    margin-top:24px;
+    line-height:1.6;
+    background:#f2f2f7;
+    border-radius:8px;
+    padding:24px
+}
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:18px;
+    margin-top:20px
+}
+.card{
+    height:120px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#f2f2f7;
+    border-radius:8px;
+    transition:.15s background
+}
+.card:hover{
+    background:rgba(0,122,255,.095)
+}
+.card:hover svg{
+    fill:#007aff;
+    transform:translate3d(0,-2px,0)
+}
+.card svg{
+    fill:#333;
+    width:48px;
+    transition:.15s fill,.15s transform
+}
+.card img{
+    width:48px
+}
+.ps{
+    text-align:center;
+    margin:52px 0 24px;
+    color:#3c3c434d
+}
+@media(prefers-color-scheme:dark){
+    body{
+        background:#1c1c1e;
+        color:#fff
+    }
+    main h1{
+        color:#ebebf54d
+    }
+    .intro,.card{
+        background:#2c2c2e
+    }
+    .card svg{
+        fill:#8e8e93
+    }
+    .card:hover{
+        background:#0a84ff11
+    }
+    .card:hover svg{
+        fill:#0a84ff
+    }
+    a.text-link{
+        color:#0a84ff
+    }
+    a.text-link:hover{
+        background:#0a84ff18
+    }
+    .ps{
+        color:#ebebf54d
+    }
+}
+ 

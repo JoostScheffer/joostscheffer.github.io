@@ -96,7 +96,7 @@ main .primary{
 }
 .card:hover img{
     fill:#007aff;
-    transform:translate3d(0,-5px,0)
+    transform:translate3d(0,-5px,0);
 }
 .card img{
     fill:#333;

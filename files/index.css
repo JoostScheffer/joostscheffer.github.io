@@ -94,6 +94,16 @@ main .primary{
     width:48px;
     transition:.15s fill,.15s transform
 }
+.card:hover img{
+    fill:#007aff;
+    transform:translate3d(0,-5px,0)
+}
+.card img{
+    fill:#333;
+    width:48px;
+    transition:.15s fill,.15s transform;
+    border-radius: 8px;
+}
 .card img{
     width:48px
 }
@@ -109,6 +119,11 @@ main .primary{
     }
     main h1{
         color:#ebebf54d
+    }
+    main h2{
+        color:#fff;
+        margin-top: 12px;
+        margin-bottom: 12px;
     }
     .intro,.card{
         background:#2c2c2e

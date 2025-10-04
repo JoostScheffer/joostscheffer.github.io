@@ -20,6 +20,27 @@ body{
 h1,h2,p{
     margin:0
 }
+h1.projects{
+    text-align:center;
+    color:#fff5db;
+}
+section{
+    /* a section should take up 1 viewport */
+    min-height: 100vh;
+    height: 100vh;
+}
+section.projects{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    /* min-height:100vh; */
+    /* a section should take up 1 viewport */
+    min-height: 100vh;
+    height: 100vh;
+    background-color:#1c1c1e;
+    color:#fff5db;
+}
 a{
     text-decoration:none
 }
@@ -44,7 +65,7 @@ a.text-link:hover{
     margin:0 auto
 }
 main{
-    padding:24px 28px
+    padding:24px 28px;
 }
 main h1{
     margin-top:24px;
@@ -97,6 +118,23 @@ main .primary{
 .card img{
     width:48px
 }
+.card.project{
+    margin-right: 3px;
+    margin-bottom: 3px;
+    padding: 6px 9px 9px 11px;
+    border-radius: 8px;
+    height: 219px;
+    width: 214px;
+    float: left;
+    background-repeat: no-repeat;
+    background-size: 234px 156px, 17px;
+    background-position: top, right top;
+    transition: 0.3s;
+}
+.card.project.test{
+    background-image: url(./media_card.png);
+    /* background-image: url("https://raw.githubusercontent.com/rodrigograca31/rodrigograca31/master/files/media_card.png"); */
+}
 .ps{
     text-align:center;
     margin:52px 0 24px;
@@ -116,9 +154,9 @@ main .primary{
     .card svg{
         fill:#8e8e93
     }
-    .card:hover{
+    /* .card:hover{
         background:#0a84ff11
-    }
+    } */
     .card:hover svg{
         fill:#0a84ff
     }

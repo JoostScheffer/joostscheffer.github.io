@@ -65,7 +65,7 @@
         S.idxTime = fields.indexOf('Time');
         S.idxMs = fields.indexOf('Millisecond');
 
-        const targetColumn = 'WT2:P-1';
+        const targetColumn = 'WT1:P-1';
         if (fields.includes(targetColumn)) {
           S.columns = [targetColumn];
           S.metricIndices = [fields.indexOf(targetColumn)];

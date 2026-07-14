@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FastTS — MVP P-1 24h Bold Days</title>
+  <link rel="stylesheet" href="uPlot.min.css">
+  <script src="uPlot.iife.min.js"></script>
+  <script src="papaparse.min.js"></script>
+  <style>
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background: #ffffff; font-family: sans-serif; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    #topbar {
+      height: 45px; display: flex; align-items: center; padding: 0 15px;
+      border-bottom: 1px solid #eee; background: #fafafa; gap: 15px;
+      flex-shrink: 0;
+    }
+    button {
+      padding: 6px 12px; font-weight: bold; cursor: pointer;
+    }
+    #status {
+      font-size: 12px; color: #666;
+    }
+    #plot-wrap {
+      flex: 1; position: relative; width: 100%;
+    }
+    .uplot {
+      position: absolute; inset: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="topbar">
+    <button id="btn-open">Open webapp Directory</button>
+    <span id="status">Ready. Select your project folder to display charts.</span>
+  </div>
+
+  <div id="plot-wrap"></div>
+
+  <script>
+    'use strict';
+
+    const S = { columns: null, ts: [], vals: {} };
+
+    function parseValue(v) {
+      if (v === null || v === undefined) return null;
+      const str = String(v).toUpperCase().trim();
+      if (str === 'NAN' || str === '') return null;
+      return isNaN(parseFloat(str)) ? null : parseFloat(str);
+    }
+
+    function parseChunk(text) {
+      if (!text.trim()) return;
+      const r = Papa.parse(text, { header: false, dynamicTyping: false, skipEmptyLines: true });
+      if (!r.data.length) return;
+
+      let rows = r.data;
+
+      if (S.columns === null) {
+        const fields = rows[0];
+        S.idxDate = fields.indexOf('Date');
+        S.idxTime = fields.indexOf('Time');
+        S.idxMs = fields.indexOf('Millisecond');
+
+        const targetColumn = 'WT2:P-1';
+        if (fields.includes(targetColumn)) {
+          S.columns = [targetColumn];
+          S.metricIndices = [fields.indexOf(targetColumn)];
+          S.vals[targetColumn] = [];
+        } else {
+          document.getElementById('status').textContent = "Error: 'WT2:P-1' column not found in CSV header.";
+          return;
+        }
+
+        rows = rows.slice(1);
+      } else if (rows[0][S.idxDate] === 'Date') {
+        rows = rows.slice(1);
+      }
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.length < 4) continue;
+
+        const dateStr = row[S.idxDate];
+        const timeStr = row[S.idxTime];
+        const msStr = row[S.idxMs];
+        if (!dateStr || !timeStr) continue;
+
+        const d = new Date(`${dateStr} ${timeStr}`);
+        let t = d.getTime();
+        if (isNaN(t)) continue;
+
+        if (msStr) t += parseInt(msStr, 10) || 0;
+        S.ts.push(t);
+
+        const rawValue = row[S.metricIndices[0]];
+        S.vals[S.columns[0]].push(parseValue(rawValue));
+      }
+    }
+
+    function renderPlot() {
+      if (S.ts.length === 0) return;
+
+      const wrap = document.getElementById('plot-wrap');
+      wrap.innerHTML = ''; 
+
+      const uPlotData = [
+        S.ts.map(t => t / 1000), 
+        S.vals[S.columns[0]]
+      ];
+
+      const W = wrap.getBoundingClientRect().width || window.innerWidth;
+      const computedH = wrap.getBoundingClientRect().height || 400;
+      const H = Math.max(200, computedH - 65);
+
+      const formatterDate = new Intl.DateTimeFormat('en-ZA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+
+      const formatterTime = new Intl.DateTimeFormat('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
+
+      const opts = {
+        title: "WT2:P-1 Timeline Events", 
+        width: W,
+        height: H,
+        cursor: { show: true, drag: { x: true, y: false } },
+        select: { show: true },
+        legend: { show: false }, 
+        series: [
+          {}, 
+          {
+            label: S.columns[0],
+            scale: "values", 
+            stroke: "red", 
+            width: 1 / window.devicePixelRatio, 
+            paths: uPlot.paths.linear(),
+            points: { show: false },
+            spanGaps: false
+          }
+        ],
+        axes: [
+          {
+            side: 2,           
+            space: 80,         
+            stroke: '#000000', 
+            font: '11px sans-serif',
+            values: (u, ticks) => ticks.map(t => {
+              const d = new Date(t * 1000);
+              return `${formatterDate.format(d)}\n${formatterTime.format(d)}`;
+            }),
+            grid: {
+              // FIX: Access the active grid splits array using the fifth parameter
+              stroke: (u, space, tickIdx, tickValue, currentGridSplits) => {
+                if (!currentGridSplits || tickIdx === 0) return '#f3f4f6';
+
+                const currentDay = new Date(tickValue * 1000).getDate();
+                const previousDay = new Date(currentGridSplits[tickIdx - 1] * 1000).getDate();
+
+                // Distinct dark gray accent for the grid line crossing into a new day
+                return (currentDay !== previousDay) ? '#babcbf' : '#f3f4f6';
+              },
+              width: (u, space, tickIdx, tickValue, currentGridSplits) => {
+                if (!currentGridSplits || tickIdx === 0) return 1;
+
+                const currentDay = new Date(tickValue * 1000).getDate();
+                const previousDay = new Date(currentGridSplits[tickIdx - 1] * 1000).getDate();
+
+                // Thicken the divider line slightly to highlight day boundaries
+                return (currentDay !== previousDay) ? 1.5 : 1;
+              }
+            }
+          }, 
+          {
+            scale: "values",
+            stroke: '#000000',
+            ticks: { stroke: '#e5e7eb', width: 1 },
+            grid: { stroke: '#f3f4f6', width: 1 },
+            size: 60,
+            font: '12px sans-serif'
+          }
+        ]
+      };
+
+      try {
+        new uPlot(opts, uPlotData, wrap);
+      } catch (err) {
+        console.error("uPlot Initialization Crash:", err);
+      }
+    }
+
+    async function loadDirectory() {
+      try {
+        const dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+        document.getElementById('status').textContent = `Scanning "${dirHandle.name}"...`;
+        
+        const files = [];
+        for await (const [name, handle] of dirHandle.entries()) {
+          if (handle.kind === 'file' && /^ABC-(\d+)\.csv$/i.test(name)) {
+            files.push({ name, handle });
+          }
+        }
+
+        files.sort((a, b) => {
+          const numA = parseInt(a.name.match(/\d+/)[0], 10);
+          const numB = parseInt(b.name.match(/\d+/)[0], 10);
+          return numA - numB;
+        });
+
+        if (files.length === 0) {
+          document.getElementById('status').textContent = "Error: No matching ABC-XX.csv files found.";
+          return;
+        }
+
+        for (const fileObj of files) {
+          const file = await fileObj.handle.getFile();
+          const text = await file.text();
+          parseChunk(text);
+        }
+
+        document.getElementById('status').textContent = `Loaded ${S.ts.length.toLocaleString()} records from ${files.length} files. Only plotting WT2:P-1.`;
+        renderPlot();
+
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          document.getElementById('status').textContent = `Error: ${e.message}`;
+          console.error(e);
+        }
+      }
+    }
+
+    document.getElementById('btn-open').addEventListener('click', loadDirectory);
+    window.addEventListener('resize', () => { if(S.ts.length) renderPlot(); });
+  </script>
+</body>
+</html>
